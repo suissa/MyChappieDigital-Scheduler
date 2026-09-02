@@ -1,0 +1,20 @@
+# dependencies / build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# UbiQUIC sidecar build artifacts (source is tracked, cache/binaries are not)
+packages/Services/UbiQUIC/zig-out/
+packages/Services/UbiQUIC/.zig-cache/
+packages/Services/UbiQUIC/data/
+
+# event-sourcing streams & runtime data
+data/
+*.qmes
+
+# agent worktrees live under this project but are not part of it
+.claude/worktrees/
+
+# editor / OS
+.DS_Store
+*.log

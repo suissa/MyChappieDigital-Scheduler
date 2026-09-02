@@ -1,0 +1,21 @@
+/**
+ * Projection & resource-pool namespace names as code.
+ *
+ * Projections are derived read models (AGENTS.md §17). Every KV namespace the
+ * behaviours touch is named here — no namespace string literal elsewhere.
+ */
+
+export const PROJECTION = Object.freeze({
+  /** Per-professional ordered queue of waiting patients. */
+  queue: "queue",
+  /** Ordered-list namespace backing the fair positioner. */
+  queueStream: "queue-stream",
+  /** Scheduled consultas by patient. */
+  consulta: "consulta",
+  /** Learned (professional, condition) -> competence. */
+  affinity: "professional-affinity",
+  /** Optimistic-lock namespace for bookable slots. */
+  slotPool: "slot-pool",
+} as const);
+
+export type ProjectionName = (typeof PROJECTION)[keyof typeof PROJECTION];

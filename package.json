@@ -1,0 +1,26 @@
+{
+  "name": "@mychappie/scheduler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenMental scheduler — event-driven multi-agent implementation of docs/prompts/00.md, Everything-as-Code, on the UbiQUIC (QUICMQ) message broker.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "sidecar": "bash scripts/ubiquic-sidecar.sh",
+    "sidecar:build": "bash scripts/ubiquic-build.sh",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "flow:render": "tsx src/orchestration/flows/render-all.ts",
+    "start": "tsx src/app/main.ts",
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
+    "test:e2e": "node --import tsx --test test/e2e/*.test.ts"
+  },
+  "dependencies": {
+    "nats": "2.29.3",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.10",
+    "tsx": "4.21.0",
+    "typescript": "5.9.2"
+  }
+}
