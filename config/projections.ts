@@ -6,6 +6,8 @@
  */
 
 export const PROJECTION = Object.freeze({
+  /** The intake record (patient contact + complaint), read by downstream nodes. */
+  intake: "intake-record",
   /** Per-professional ordered queue of waiting patients. */
   queue: "queue",
   /** Ordered-list namespace backing the fair positioner. */

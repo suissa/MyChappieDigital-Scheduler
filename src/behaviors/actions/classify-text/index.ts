@@ -34,6 +34,8 @@ type Input = z.infer<typeof inputSchema>;
 const outputSchema = z.object({
   labels: z.array(z.string()).min(1),
   dominant: z.string(),
+  /** Which severity buckets fired (config.severity keys). */
+  severityLabels: z.array(z.string()),
   severityHits: z.array(z.string()),
   escalated: z.boolean(),
   matchedPhrases: z.array(z.string()),
@@ -85,8 +87,16 @@ export const classifyText = defineBehavior<Config, Input, Output>({
     }
 
     const severityHits: string[] = [];
-    for (const [, phrases] of Object.entries(config.severity ?? {})) {
-      for (const phrase of phrases) if (hay.includes(normalize(phrase))) severityHits.push(phrase);
+    const severityLabels: string[] = [];
+    for (const [bucket, phrases] of Object.entries(config.severity ?? {})) {
+      let bucketHit = false;
+      for (const phrase of phrases) {
+        if (hay.includes(normalize(phrase))) {
+          severityHits.push(phrase);
+          bucketHit = true;
+        }
+      }
+      if (bucketHit) severityLabels.push(bucket);
     }
 
     const escalated = escalationHits.length > 0;
@@ -102,6 +112,7 @@ export const classifyText = defineBehavior<Config, Input, Output>({
     return ok({
       labels: [...new Set(labels)],
       dominant,
+      severityLabels: [...new Set(severityLabels)],
       severityHits: [...new Set(severityHits)],
       escalated,
       matchedPhrases: escalationHits,

@@ -8,7 +8,7 @@
  */
 
 export const SEMANTIC_TYPE = Object.freeze({
-  intakeSubmission: "IntakeSubmission",
+  // --- behaviour port types (the generic AtomicBehaviour i/o) ---------------
   complaintText: "Text",
   triageResult: "TriageResult",
   approvalRequest: "ApprovalRequest",
@@ -22,7 +22,6 @@ export const SEMANTIC_TYPE = Object.freeze({
   reservationRequest: "ReservationRequest",
   reservation: "Reservation",
   releaseAck: "ReleaseAck",
-  scheduledConsulta: "ScheduledConsulta",
   projectionPatch: "ProjectionPatch",
   projectionVersion: "ProjectionVersion",
   outboundMessage: "OutboundMessage",
@@ -30,6 +29,17 @@ export const SEMANTIC_TYPE = Object.freeze({
   audioRef: "AudioRef",
   transcript: "Transcript",
   void: "Void",
+
+  // --- flow phase types (the data that travels the graph edges) ------------
+  // An edge `A :--: B` is valid only when OutputType(A) ≡ InputType(B).
+  intakeSubmission: "IntakeSubmission",
+  triagedIntake: "TriagedIntake",
+  reviewedIntake: "ReviewedIntake",
+  matchedIntake: "MatchedIntake",
+  queuedIntake: "QueuedIntake",
+  scheduledConsulta: "ScheduledConsulta",
+  persistedConsulta: "PersistedConsulta",
+  confirmedConsulta: "ConfirmedConsulta",
 } as const);
 
 export type SemanticType = (typeof SEMANTIC_TYPE)[keyof typeof SEMANTIC_TYPE];

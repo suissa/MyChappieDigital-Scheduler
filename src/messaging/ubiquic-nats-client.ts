@@ -51,13 +51,6 @@ export class UbiQuicNatsClient implements BrokerPort {
       waitOnFirstConnect: false,
     });
     this.#log.info("connected to UbiQUIC sidecar");
-    void this.#watchStatus(this.#nc);
-  }
-
-  async #watchStatus(nc: NatsConnection): Promise<void> {
-    for await (const s of nc.status()) {
-      this.#log.debug("broker status", { type: s.type, data: String(s.data ?? "") });
-    }
   }
 
   #conn(): NatsConnection {
@@ -124,9 +117,15 @@ export class UbiQuicNatsClient implements BrokerPort {
   }
 
   async drain(): Promise<void> {
-    if (this.#nc && !this.#nc.isClosed()) {
-      await this.#nc.drain();
-    }
+    const nc = this.#nc;
     this.#nc = null;
+    if (!nc || nc.isClosed()) return;
+    const bounded = <T>(p: Promise<T>, ms: number): Promise<T | undefined> =>
+      Promise.race([p, new Promise<undefined>((r) => setTimeout(() => r(undefined), ms))]);
+    try {
+      await bounded(nc.drain(), 2_000);
+    } finally {
+      if (!nc.isClosed()) await bounded(nc.close(), 2_000);
+    }
   }
 }

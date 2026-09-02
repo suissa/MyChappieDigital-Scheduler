@@ -12,6 +12,9 @@ packages/Services/UbiQUIC/data/
 data/
 *.qmes
 
+# throwaway experiment scripts
+scratch/
+
 # agent worktrees live under this project but are not part of it
 .claude/worktrees/
 

@@ -27,6 +27,9 @@ export const intakeSubmittedSchema = z.object({
   patient: z.object({ id: z.string(), phone: z.string().min(8), displayName: z.string() }),
   complaintText: z.string().min(1),
   audioRef: z.string().optional(),
+  audioDurationSeconds: z.number().positive().optional(),
+  /** Deterministic transcript for offline runs / tests. */
+  offlineTranscript: z.string().optional(),
   submittedAt: iso,
 });
 
@@ -35,6 +38,7 @@ export const triageRequestedSchema = z.object({
   patientId: z.string(),
   complaintText: z.string(),
   audioRef: z.string().optional(),
+  transcriptCostCentavos: z.number().int().nonnegative().default(0),
 });
 
 export const triageCompletedSchema = z.object({
@@ -201,8 +205,19 @@ export const schemaForSubject = (subject: string): z.ZodTypeAny | undefined =>
 
 // Convenience payload types used across agents/behaviours.
 export type IntakeSubmitted = z.infer<typeof intakeSubmittedSchema>;
+export type TriageRequested = z.infer<typeof triageRequestedSchema>;
 export type TriageCompleted = z.infer<typeof triageCompletedSchema>;
+export type CrisisDetected = z.infer<typeof crisisDetectedSchema>;
+export type ClinicalReviewRequested = z.infer<typeof clinicalReviewRequestedSchema>;
 export type ClinicalReviewResolved = z.infer<typeof clinicalReviewResolvedSchema>;
+export type MatchingRequested = z.infer<typeof matchingRequestedSchema>;
 export type ProfessionalMatched = z.infer<typeof professionalMatchedSchema>;
+export type MatchingFailed = z.infer<typeof matchingFailedSchema>;
 export type QueuePositionAssigned = z.infer<typeof queuePositionAssignedSchema>;
+export type SlotReservationRequested = z.infer<typeof slotReservationRequestedSchema>;
 export type ConsultaScheduled = z.infer<typeof consultaScheduledSchema>;
+export type SlotReservationFailed = z.infer<typeof slotReservationFailedSchema>;
+export type SlotHoldReleased = z.infer<typeof slotHoldReleasedSchema>;
+export type WhatsappDispatchRequested = z.infer<typeof whatsappDispatchRequestedSchema>;
+export type WhatsappDispatched = z.infer<typeof whatsappDispatchedSchema>;
+export type ConsultaProjectionUpdated = z.infer<typeof consultaProjectionUpdatedSchema>;

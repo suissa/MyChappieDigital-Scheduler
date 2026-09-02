@@ -30,8 +30,13 @@ export type ContextName = (typeof CONTEXT)[keyof typeof CONTEXT];
 export const KIND = Object.freeze({ event: "event", command: "command" } as const);
 export type SubjectKind = (typeof KIND)[keyof typeof KIND];
 
-const s = (context: ContextName, aggregate: string, name: string, kind: SubjectKind): string =>
-  [ROOT, context, aggregate, name, kind, VERSION].join(".");
+const s = <C extends ContextName, A extends string, N extends string, K extends SubjectKind>(
+  context: C,
+  aggregate: A,
+  name: N,
+  kind: K,
+): `${typeof ROOT}.${C}.${A}.${N}.${K}.${typeof VERSION}` =>
+  [ROOT, context, aggregate, name, kind, VERSION].join(".") as `${typeof ROOT}.${C}.${A}.${N}.${K}.${typeof VERSION}`;
 
 export const SUBJECTS = Object.freeze({
   // ---- intake -----------------------------------------------------------

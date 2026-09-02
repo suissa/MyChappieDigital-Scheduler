@@ -23,7 +23,7 @@ export const UBIQUIC = Object.freeze({
   /** How long a behaviour request waits for its response before failing. */
   requestTimeoutMs: 5_000,
   /** Startup wait for the sidecar to accept connections. */
-  connectTimeoutMs: 4_000,
+  connectTimeoutMs: 10_000,
 } as const);
 
 /** Consumer/queue-group names, as code. */
