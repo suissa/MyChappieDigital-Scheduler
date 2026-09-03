@@ -24,6 +24,9 @@ export const CONTEXT = Object.freeze({
   governance: "governance",
   audit: "audit",
   behavior: "behavior",
+  transcription: "transcription",
+  speech: "speech",
+  calendar: "calendar",
 } as const);
 export type ContextName = (typeof CONTEXT)[keyof typeof CONTEXT];
 
@@ -70,6 +73,25 @@ export const SUBJECTS = Object.freeze({
   // ---- notification -------------------------------------------
   whatsappDispatchRequested: s(CONTEXT.notification, "whatsapp", "dispatch-requested", KIND.command),
   whatsappDispatched: s(CONTEXT.notification, "whatsapp", "dispatched", KIND.event),
+
+  // ---- transcription (local whisper -> LLM correction) ---------
+  transcriptionRequested: s(CONTEXT.transcription, "transcript", "requested", KIND.command),
+  transcriptDrafted: s(CONTEXT.transcription, "transcript", "drafted", KIND.event),
+  transcriptFinalized: s(CONTEXT.transcription, "transcript", "finalized", KIND.event),
+  clarificationRequested: s(CONTEXT.transcription, "clarification", "requested", KIND.command),
+  clarificationResolved: s(CONTEXT.transcription, "clarification", "resolved", KIND.event),
+
+  // ---- speech (elevenlabs synthesis / cloning / translation) ---
+  speechSynthesisRequested: s(CONTEXT.speech, "speech", "synthesis-requested", KIND.command),
+  speechSynthesized: s(CONTEXT.speech, "speech", "synthesized", KIND.event),
+  speechSynthesisFailed: s(CONTEXT.speech, "speech", "synthesis-failed", KIND.event),
+
+  // ---- calendar mirror (google, data-only, bidirectional) ------
+  calendarMirrorRequested: s(CONTEXT.calendar, "mirror", "requested", KIND.command),
+  calendarMirrored: s(CONTEXT.calendar, "mirror", "applied", KIND.event),
+  calendarMirrorFailed: s(CONTEXT.calendar, "mirror", "failed", KIND.event),
+  externalCalendarPollRequested: s(CONTEXT.calendar, "external", "poll-requested", KIND.command),
+  externalCalendarEventObserved: s(CONTEXT.calendar, "external", "event-observed", KIND.event),
 
   // ---- projections ----------------------------------------------
   affinityProjectionUpdated: s(CONTEXT.matching, "affinity-projection", "updated", KIND.event),

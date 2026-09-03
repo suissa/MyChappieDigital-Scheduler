@@ -30,6 +30,26 @@ export const SEMANTIC_TYPE = Object.freeze({
   transcript: "Transcript",
   void: "Void",
 
+  // --- transcription / LLM / speech / calendar ports ----------------------
+  rawTranscript: "RawTranscript",
+  assembledPrompt: "AssembledPrompt",
+  llmCompletion: "LlmCompletion",
+  guardedResponse: "GuardedResponse",
+  correctedTranscript: "CorrectedTranscript",
+  clarificationRequest: "ClarificationRequest",
+  translatedText: "TranslatedText",
+  speechRequest: "SpeechRequest",
+  synthesizedSpeech: "SynthesizedSpeech",
+  calendarMirrorRequest: "CalendarMirrorRequest",
+  calendarMirrorResult: "CalendarMirrorResult",
+  externalCalendarSnapshot: "ExternalCalendarSnapshot",
+  observedExternalEvents: "ObservedExternalEvents",
+
+  // transcription flow phase types
+  attachedAudio: "AttachedAudio",
+  draftTranscript: "DraftTranscript",
+  finalTranscript: "FinalTranscript",
+
   // --- flow phase types (the data that travels the graph edges) ------------
   // An edge `A :--: B` is valid only when OutputType(A) ≡ InputType(B).
   intakeSubmission: "IntakeSubmission",

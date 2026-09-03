@@ -18,6 +18,13 @@ import { requestHumanApproval } from "./actions/request-human-approval/index.js"
 import { recordProjection } from "./actions/record-projection/index.js";
 import { dispatchNotification } from "./actions/dispatch-notification/index.js";
 import { transcribeAudio } from "./actions/transcribe-audio/index.js";
+import { assemblePrompt } from "./actions/assemble-prompt/index.js";
+import { llmComplete } from "./actions/llm-complete/index.js";
+import { guardResponse } from "./actions/guard-response/index.js";
+import { translateText } from "./actions/translate-text/index.js";
+import { synthesizeSpeech } from "./actions/synthesize-speech/index.js";
+import { mirrorCalendarEvent } from "./actions/mirror-calendar-event/index.js";
+import { pollExternalCalendar } from "./actions/poll-external-calendar/index.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyBehavior = AtomicBehavior<any, any, any>;
@@ -33,6 +40,13 @@ export const BEHAVIOR_REGISTRY: Readonly<Record<string, AnyBehavior>> = Object.f
   [BEHAVIOR.upsertProjection]: recordProjection,
   [BEHAVIOR.dispatchWhatsapp]: dispatchNotification,
   [BEHAVIOR.transcribeAudio]: transcribeAudio,
+  [BEHAVIOR.assemblePrompt]: assemblePrompt,
+  [BEHAVIOR.completeWithLlm]: llmComplete,
+  [BEHAVIOR.guardResponse]: guardResponse,
+  [BEHAVIOR.translateText]: translateText,
+  [BEHAVIOR.synthesizeSpeech]: synthesizeSpeech,
+  [BEHAVIOR.mirrorCalendarEvent]: mirrorCalendarEvent,
+  [BEHAVIOR.pollExternalCalendar]: pollExternalCalendar,
 });
 
 export const getBehavior = (label: string): AnyBehavior => {

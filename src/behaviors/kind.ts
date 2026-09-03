@@ -42,8 +42,55 @@ export interface RequestPort {
   emit(subject: string, payload: unknown): Promise<void>;
 }
 
+export interface HttpResponse {
+  readonly status: number;
+  readonly json: unknown;
+  readonly text: string;
+}
+
+export interface HttpRequest {
+  readonly method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  readonly url: string;
+  readonly headers?: Readonly<Record<string, string>>;
+  readonly body?: unknown;
+}
+
 export interface HttpPort {
+  request(req: HttpRequest): Promise<HttpResponse>;
+  /** Convenience for the common case. */
   postJson(url: string, body: unknown): Promise<{ status: number; json: unknown }>;
+}
+
+/**
+ * An "AI provider" capability — a thin seam over the model gateways so a
+ * behaviour can transcribe / complete / synthesize without importing an SDK.
+ * Offline implementations return deterministic stand-ins.
+ */
+export interface AiPort {
+  transcribe(req: {
+    providerKey: string;
+    audioRef: string;
+    durationSeconds: number;
+    language?: string;
+    offlineTranscript?: string;
+  }): Promise<{ text: string; costCentavos: number; modelId: string; simulated: boolean }>;
+
+  complete(req: {
+    modelId: string;
+    prompt: string;
+    temperature: number;
+    live: boolean;
+    /** Offline stand-in the caller supplies when `live` is false. */
+    offlineCompletion?: string;
+  }): Promise<{ text: string; tokensIn: number; tokensOut: number; simulated: boolean }>;
+
+  synthesize(req: {
+    modelId: string;
+    text: string;
+    voiceId: string;
+    language: string;
+    live: boolean;
+  }): Promise<{ audioRef: string; characterCount: number; simulated: boolean }>;
 }
 
 export interface BehaviorContext {
@@ -53,6 +100,7 @@ export interface BehaviorContext {
   readonly locks: LockPort;
   readonly bus: RequestPort;
   readonly http: HttpPort;
+  readonly ai: AiPort;
   /** Correlation identity threaded from the triggering event. */
   readonly correlationId: string;
 }

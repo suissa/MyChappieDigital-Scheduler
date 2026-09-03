@@ -20,9 +20,10 @@ import { KIND, isKnownSubject } from "../../config/subjects.js";
 import type { MemoryStore } from "../adapters/kv-memory.js";
 import type { ProfessionalDirectory } from "../domain/directory.js";
 import { fetchHttpPort } from "../adapters/http-fetch.js";
+import { offlineAiGateway } from "../adapters/ai-gateway.js";
 import { makeBusRequestPort } from "../adapters/bus-request-port.js";
 import { TOOL_CATALOG, type ToolName } from "../tools/catalog.js";
-import type { BehaviorContext } from "../behaviors/kind.js";
+import type { AiPort, BehaviorContext, HttpPort } from "../behaviors/kind.js";
 import type { Agent, AgentHandlerCtx, AgentSubscription } from "./agent.js";
 
 export interface RuntimeDeps {
@@ -31,6 +32,8 @@ export interface RuntimeDeps {
   readonly clock: Clock;
   readonly logger: Logger;
   readonly directory: ProfessionalDirectory;
+  readonly http?: HttpPort;
+  readonly ai?: AiPort;
 }
 
 export class AgentRuntime {
@@ -185,7 +188,8 @@ export class AgentRuntime {
         context: agent.context,
         correlationId,
       }),
-      http: fetchHttpPort,
+      http: this.#deps.http ?? fetchHttpPort,
+      ai: this.#deps.ai ?? offlineAiGateway,
       correlationId,
     });
 

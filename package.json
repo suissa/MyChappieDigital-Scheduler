@@ -11,9 +11,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "flow:render": "tsx src/orchestration/flows/render-all.ts",
     "start": "tsx src/app/main.ts",
-    "test": "node --import tsx --test test/flow-dsl/*.test.ts test/behaviors/*.test.ts test/e2e/*.test.ts",
-    "test:unit": "node --import tsx --test test/flow-dsl/*.test.ts test/behaviors/*.test.ts",
-    "test:e2e": "node --import tsx --test test/e2e/*.test.ts"
+    "test": "node --import tsx --test --test-concurrency=1 test/flow-dsl/*.test.ts test/behaviors/*.test.ts test/e2e/*.test.ts",
+    "test:unit": "node --import tsx --test --test-concurrency=1 test/flow-dsl/*.test.ts test/behaviors/*.test.ts",
+    "test:e2e": "node --import tsx --test --test-concurrency=1 test/e2e/*.test.ts"
   },
   "dependencies": {
     "nats": "2.29.3",

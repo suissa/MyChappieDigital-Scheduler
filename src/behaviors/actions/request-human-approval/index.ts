@@ -47,7 +47,7 @@ export const requestHumanApproval = defineBehavior<Config, Input, Output>({
     types: { input: SEMANTIC_TYPE.approvalRequest, output: SEMANTIC_TYPE.approvalDecision },
     invocation: {
       policy: INVOCATION_POLICY.restricted,
-      allowedAgents: [AGENT.governance, AGENT.triage],
+      allowedAgents: [AGENT.governance, AGENT.triage, AGENT.transcription],
       humanInTheLoop: true,
     },
     events: {

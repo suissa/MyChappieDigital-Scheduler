@@ -11,7 +11,6 @@ import { AGENT, CONTEXT_LABEL } from "../../config/identity.js";
 import { CONSUMER_GROUP } from "../../config/broker.js";
 import { SUBJECTS } from "../../config/subjects.js";
 import { PROJECTION } from "../../config/projections.js";
-import { MODELS } from "../../config/ai-models.js";
 import { intakeSubmittedSchema, type IntakeSubmitted } from "../domain/events.js";
 
 export interface IntakeRecord {
@@ -25,7 +24,7 @@ export interface IntakeRecord {
 export const intakeAgent = defineAgent({
   label: AGENT.intake,
   context: CONTEXT_LABEL.intake,
-  tools: ["audioTranscriber"],
+  tools: ["whisperLocalTranscriber"],
   subscriptions: [
     {
       subject: SUBJECTS.intakeSubmitted,
@@ -38,8 +37,8 @@ export const intakeAgent = defineAgent({
         if (intake.audioRef) {
           const res = await ctx.invokeTool<
             { audioRef: string; durationSeconds: number; offlineTranscript?: string },
-            { text: string; costCentavos: number; modelId: string; simulated: boolean }
-          >("audioTranscriber", {
+            { text: string; costCentavos: number; modelId: string; providerKey: string; simulated: boolean }
+          >("whisperLocalTranscriber", {
             audioRef: intake.audioRef,
             durationSeconds: intake.audioDurationSeconds ?? 60,
             ...(intake.offlineTranscript ? { offlineTranscript: intake.offlineTranscript } : {}),
@@ -48,7 +47,8 @@ export const intakeAgent = defineAgent({
             complaintText = `${complaintText}\n${res.value.text}`.trim();
             transcriptCostCentavos = res.value.costCentavos;
             ctx.logger.info("audio transcribed", {
-              model: MODELS.audioTranscription.id,
+              model: res.value.modelId,
+              provider: res.value.providerKey,
               costCentavos: transcriptCostCentavos,
               simulated: res.value.simulated,
             });

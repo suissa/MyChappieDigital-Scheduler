@@ -10,6 +10,9 @@ import { queueAgent } from "./queue-agent.js";
 import { schedulingAgent } from "./scheduling-agent.js";
 import { notificationAgent } from "./notification-agent.js";
 import { auditAgent } from "./audit-agent.js";
+import { transcriptionAgent } from "./transcription-agent.js";
+import { voiceAgent } from "./voice-agent.js";
+import { calendarMirrorAgent } from "./calendar-mirror-agent.js";
 
 export { AgentRuntime, type RuntimeDeps } from "./runtime.js";
 export { type Agent, type AgentHandlerCtx, type AgentSubscription } from "./agent.js";
@@ -24,6 +27,9 @@ export const ALL_AGENTS: readonly Agent[] = Object.freeze([
   schedulingAgent,
   notificationAgent,
   auditAgent,
+  transcriptionAgent,
+  voiceAgent,
+  calendarMirrorAgent,
 ]);
 
 export {
@@ -36,4 +42,7 @@ export {
   schedulingAgent,
   notificationAgent,
   auditAgent,
+  transcriptionAgent,
+  voiceAgent,
+  calendarMirrorAgent,
 };

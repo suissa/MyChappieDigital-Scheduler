@@ -8,9 +8,14 @@ import {
   CONSULTA_SCHEDULING_DSL,
   CONSULTA_SCHEDULING_BINDINGS,
 } from "./consulta-scheduling.flow.js";
+import {
+  TRANSCRIPT_CORRECTION_DSL,
+  TRANSCRIPT_CORRECTION_BINDINGS,
+} from "./transcript-correction.flow.js";
 
 const FLOWS = [
   { name: "consulta-scheduling", dsl: CONSULTA_SCHEDULING_DSL, bindings: CONSULTA_SCHEDULING_BINDINGS },
+  { name: "transcript-correction", dsl: TRANSCRIPT_CORRECTION_DSL, bindings: TRANSCRIPT_CORRECTION_BINDINGS },
 ] as const;
 
 let failures = 0;

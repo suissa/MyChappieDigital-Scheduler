@@ -16,6 +16,7 @@ import {
   readQueueForProfessional,
   readAffinity,
   readAuditTrail,
+  readCalendarMirror,
 } from "../../src/projections/read.js";
 import { UBIQUIC } from "../../config/broker.js";
 import { SUBJECTS } from "../../config/subjects.js";
@@ -98,6 +99,10 @@ test("happy path: intake → triage → match → queue → reserve → notify",
 
     const affinity = await readAffinity(sys.store, "pro_ANA", CONDITION.ansiedade);
     assert.ok(affinity, "the affinity projection should have been updated");
+
+    // the consulta is mirrored into google calendar (data only, simulated offline)
+    const mirror = await readCalendarMirror(sys.store, consulta!.consultaId);
+    assert.ok(mirror, "the consulta should be mirrored to the calendar");
 
     // The audit agent witnesses events only (its pattern ends in `.event.v1`);
     // commands like `triageRequested` / `matchingRequested` are not on the trail.

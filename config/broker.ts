@@ -36,5 +36,8 @@ export const CONSUMER_GROUP = Object.freeze({
   notification: "cg.notification",
   governance: "cg.governance",
   audit: "cg.audit",
+  transcription: "cg.transcription",
+  voice: "cg.voice",
+  calendarMirror: "cg.calendar-mirror",
 } as const);
 export type ConsumerGroup = (typeof CONSUMER_GROUP)[keyof typeof CONSUMER_GROUP];

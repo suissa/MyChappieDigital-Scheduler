@@ -4,6 +4,7 @@ import { fixedClock } from "../../src/kernel/clock.js";
 import { createLogger } from "../../src/kernel/logger.js";
 import { MemoryStore } from "../../src/adapters/kv-memory.js";
 import { offlineHttpPort } from "../../src/adapters/http-fetch.js";
+import { offlineAiGateway } from "../../src/adapters/ai-gateway.js";
 import type { BehaviorContext } from "../../src/behaviors/kind.js";
 import { classifyText } from "../../src/behaviors/actions/classify-text/index.js";
 import { scoreWeighted } from "../../src/behaviors/actions/score-weighted/index.js";
@@ -21,6 +22,7 @@ const ctx = (): BehaviorContext => {
     locks: store,
     bus: { async ask() { throw new Error("no bus in unit test"); }, async emit() {} },
     http: offlineHttpPort,
+    ai: offlineAiGateway,
     correlationId: "cor_test",
   };
 };

@@ -46,7 +46,7 @@ export const NODE_OWNER = Object.freeze({
 export const CONSULTA_SCHEDULING_BINDINGS: FlowBindings = Object.freeze({
   ReceiveIntake: {
     role: "action",
-    tool: "audioTranscriber",
+    tool: "whisperLocalTranscriber",
     inputType: SEMANTIC_TYPE.intakeSubmission,
     outputType: SEMANTIC_TYPE.intakeSubmission,
     listens: SUBJECTS.intakeSubmitted,

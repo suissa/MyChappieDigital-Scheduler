@@ -173,6 +173,139 @@ export const consultaProjectionUpdatedSchema = z.object({
   scheduledFor: iso,
 });
 
+// ---- transcription (local whisper -> LLM correction) --------------------
+export const transcriptionRequestedSchema = z.object({
+  transcriptId: z.string(),
+  audioRef: z.string().min(1),
+  durationSeconds: z.number().positive(),
+  language: z.string().default("pt"),
+  tier: z.enum(["primary", "paid"]).default("primary"),
+  /** Deterministic raw text for offline runs / tests. */
+  offlineRaw: z.string().optional(),
+  /** Deterministic LLM correction JSON for offline runs / tests. */
+  offlineCorrection: z.string().optional(),
+  /** Context contributors for the correction prompt. */
+  context: z
+    .object({
+      patientName: z.string().optional(),
+      dominantCondition: z.string().optional(),
+      priorTranscripts: z.array(z.string()).default([]),
+      professionalNames: z.array(z.string()).default([]),
+    })
+    .default({ priorTranscripts: [], professionalNames: [] }),
+});
+
+export const transcriptDraftedSchema = z.object({
+  transcriptId: z.string(),
+  audioRef: z.string(),
+  text: z.string(),
+  providerKey: z.string(),
+  modelId: z.string(),
+  costCentavos: money,
+  simulated: z.boolean(),
+});
+
+export const transcriptFinalizedSchema = z.object({
+  transcriptId: z.string(),
+  audioRef: z.string(),
+  rawText: z.string(),
+  correctedText: z.string(),
+  correctionCount: z.number().int().nonnegative(),
+  confidence: z.number().min(0).max(1),
+  inScope: z.boolean(),
+  clarificationId: z.string().optional(),
+  costCentavos: money,
+});
+
+export const clarificationRequestedSchema = z.object({
+  clarificationId: z.string(),
+  transcriptId: z.string(),
+  items: z.array(z.object({ term: z.string(), why: z.string() })),
+  question: z.string(),
+});
+
+export const clarificationResolvedSchema = z.object({
+  clarificationId: z.string(),
+  transcriptId: z.string(),
+  decision: z.enum(["accept", "keep-raw"]),
+  guidance: z.string().optional(),
+  reviewer: z.string(),
+});
+
+// ---- speech (elevenlabs) ---------------------------------------------
+export const speechSynthesisRequestedSchema = z.object({
+  speechId: z.string(),
+  text: z.string().min(1),
+  sourceLanguage: z.string().default("pt-BR"),
+  targetLanguage: z.string().default("pt-BR"),
+  voiceMode: z.enum(["library", "cloned"]).default("cloned"),
+  clonedVoiceId: z.string().optional(),
+  professionalId: z.string().optional(),
+  consultaId: z.string().optional(),
+});
+
+export const speechSynthesizedSchema = z.object({
+  speechId: z.string(),
+  audioRef: z.string(),
+  voiceId: z.string(),
+  language: z.string(),
+  characterCount: z.number().int().nonnegative(),
+  creditsConsumed: z.number().int().nonnegative(),
+  translated: z.boolean(),
+  simulated: z.boolean(),
+});
+
+export const speechSynthesisFailedSchema = z.object({
+  speechId: z.string(),
+  reason: z.string(),
+});
+
+// ---- calendar mirror (google, data only) ---------------------------
+export const calendarMirrorRequestedSchema = z.object({
+  externalKey: z.string(),
+  action: z.enum(["upsert", "delete"]),
+  summary: z.string(),
+  description: z.string(),
+  startIso: iso,
+  endIso: iso,
+  attendees: z.array(z.string()).default([]),
+});
+
+export const calendarMirroredSchema = z.object({
+  externalKey: z.string(),
+  action: z.enum(["created", "updated", "deleted", "noop"]),
+  providerEventId: z.string(),
+  simulated: z.boolean(),
+});
+
+export const calendarMirrorFailedSchema = z.object({
+  externalKey: z.string(),
+  reason: z.string(),
+});
+
+export const externalCalendarPollRequestedSchema = z.object({
+  professionalId: z.string(),
+  offlineSnapshot: z
+    .array(
+      z.object({
+        providerEventId: z.string(),
+        summary: z.string(),
+        startIso: iso,
+        endIso: iso,
+        description: z.string().default(""),
+      }),
+    )
+    .optional(),
+});
+
+export const externalCalendarEventObservedSchema = z.object({
+  professionalId: z.string(),
+  providerEventId: z.string(),
+  summary: z.string(),
+  startIso: iso,
+  endIso: iso,
+});
+
 /** subject -> payload schema. The runtime looks payloads up by subject here. */
 export const EVENT_REGISTRY = Object.freeze({
   [SUBJECTS.intakeSubmitted]: intakeSubmittedSchema,
@@ -194,6 +327,19 @@ export const EVENT_REGISTRY = Object.freeze({
   [SUBJECTS.whatsappDispatched]: whatsappDispatchedSchema,
   [SUBJECTS.affinityProjectionUpdated]: affinityProjectionUpdatedSchema,
   [SUBJECTS.consultaProjectionUpdated]: consultaProjectionUpdatedSchema,
+  [SUBJECTS.transcriptionRequested]: transcriptionRequestedSchema,
+  [SUBJECTS.transcriptDrafted]: transcriptDraftedSchema,
+  [SUBJECTS.transcriptFinalized]: transcriptFinalizedSchema,
+  [SUBJECTS.clarificationRequested]: clarificationRequestedSchema,
+  [SUBJECTS.clarificationResolved]: clarificationResolvedSchema,
+  [SUBJECTS.speechSynthesisRequested]: speechSynthesisRequestedSchema,
+  [SUBJECTS.speechSynthesized]: speechSynthesizedSchema,
+  [SUBJECTS.speechSynthesisFailed]: speechSynthesisFailedSchema,
+  [SUBJECTS.calendarMirrorRequested]: calendarMirrorRequestedSchema,
+  [SUBJECTS.calendarMirrored]: calendarMirroredSchema,
+  [SUBJECTS.calendarMirrorFailed]: calendarMirrorFailedSchema,
+  [SUBJECTS.externalCalendarPollRequested]: externalCalendarPollRequestedSchema,
+  [SUBJECTS.externalCalendarEventObserved]: externalCalendarEventObservedSchema,
 } as const);
 
 export type EventRegistry = typeof EVENT_REGISTRY;
@@ -221,3 +367,14 @@ export type SlotHoldReleased = z.infer<typeof slotHoldReleasedSchema>;
 export type WhatsappDispatchRequested = z.infer<typeof whatsappDispatchRequestedSchema>;
 export type WhatsappDispatched = z.infer<typeof whatsappDispatchedSchema>;
 export type ConsultaProjectionUpdated = z.infer<typeof consultaProjectionUpdatedSchema>;
+export type TranscriptionRequested = z.infer<typeof transcriptionRequestedSchema>;
+export type TranscriptDrafted = z.infer<typeof transcriptDraftedSchema>;
+export type TranscriptFinalized = z.infer<typeof transcriptFinalizedSchema>;
+export type ClarificationRequested = z.infer<typeof clarificationRequestedSchema>;
+export type ClarificationResolved = z.infer<typeof clarificationResolvedSchema>;
+export type SpeechSynthesisRequested = z.infer<typeof speechSynthesisRequestedSchema>;
+export type SpeechSynthesized = z.infer<typeof speechSynthesizedSchema>;
+export type CalendarMirrorRequested = z.infer<typeof calendarMirrorRequestedSchema>;
+export type CalendarMirrored = z.infer<typeof calendarMirroredSchema>;
+export type ExternalCalendarPollRequested = z.infer<typeof externalCalendarPollRequestedSchema>;
+export type ExternalCalendarEventObserved = z.infer<typeof externalCalendarEventObservedSchema>;

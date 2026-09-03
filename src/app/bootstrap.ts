@@ -23,6 +23,11 @@ import {
   CONSULTA_SCHEDULING_DSL,
   CONSULTA_SCHEDULING_BINDINGS,
 } from "../orchestration/flows/consulta-scheduling.flow.js";
+import {
+  TRANSCRIPT_CORRECTION_DSL,
+  TRANSCRIPT_CORRECTION_BINDINGS,
+} from "../orchestration/flows/transcript-correction.flow.js";
+import type { AiPort, HttpPort } from "../behaviors/kind.js";
 
 export type ReviewDeskMode = "auto-approve" | "auto-reject" | "external";
 
@@ -32,6 +37,8 @@ export interface BootstrapOptions {
   readonly directory?: ProfessionalDirectory;
   readonly reviewDesk?: ReviewDeskMode;
   readonly broker?: BrokerPort;
+  readonly http?: HttpPort;
+  readonly ai?: AiPort;
 }
 
 export interface IntakeSubmission {
@@ -53,13 +60,20 @@ export interface SchedulerSystem {
   start(): Promise<void>;
   stop(): Promise<void>;
   submitIntake(input: IntakeSubmission): Promise<{ intakeId: string; correlationId: CorrelationId }>;
+  /** Publish an external command/fact into the bus (as `actor.external`). */
+  emit(
+    subject: string,
+    payload: unknown,
+    kind?: "event" | "command",
+  ): Promise<{ correlationId: CorrelationId }>;
 }
 
 export const bootstrap = (opts: BootstrapOptions = {}): SchedulerSystem => {
   const clock = opts.clock ?? systemClock;
   const logger = createLogger(opts.logLevel ?? "info", { app: "mychappie-scheduler" });
 
-  // Startup gate: the declared data-flow graph must type-check.
+  // Startup gate: every declared data-flow graph must type-check.
+  compileFlow(TRANSCRIPT_CORRECTION_DSL, TRANSCRIPT_CORRECTION_BINDINGS);
   const graph = compileFlow(CONSULTA_SCHEDULING_DSL, CONSULTA_SCHEDULING_BINDINGS);
   logger.info("flow graph compiled", {
     flow: "consulta-scheduling",
@@ -72,7 +86,15 @@ export const bootstrap = (opts: BootstrapOptions = {}): SchedulerSystem => {
   const store = new MemoryStore();
   const directory = opts.directory ?? makeDemoDirectory(clock);
   const broker = opts.broker ?? new UbiQuicNatsClient(logger);
-  const runtime = new AgentRuntime({ broker, store, clock, logger, directory }).register(...ALL_AGENTS);
+  const runtime = new AgentRuntime({
+    broker,
+    store,
+    clock,
+    logger,
+    directory,
+    ...(opts.http ? { http: opts.http } : {}),
+    ...(opts.ai ? { ai: opts.ai } : {}),
+  }).register(...ALL_AGENTS);
 
   const reviewDesk = opts.reviewDesk ?? "external";
 
@@ -114,25 +136,30 @@ export const bootstrap = (opts: BootstrapOptions = {}): SchedulerSystem => {
     async start() {
       await runtime.start();
       if (reviewDesk !== "external") {
-        broker.subscribe(SUBJECTS.clinicalReviewRequested, { queue: "cg.review-desk" }, (msg) => {
-          if (!msg.respond) return;
-          const decision = reviewDesk === "auto-approve" ? "approved" : "rejected";
-          const reply = makeEnvelope(
-            {
-              subject: `${SUBJECTS.clinicalReviewRequested}.reply`,
-              kind: KIND.event,
-              schemaVersion: SCHEMA_VERSION,
-              producer: "actor.clinical-reviewer",
-              context: CONTEXT_LABEL.governance,
-              correlationId: asCorrelationId(msg.envelope.meta.correlationId),
-              causationId: asCausationId(msg.envelope.meta.id),
-              payload: { decision, reviewer: `desk:${reviewDesk}`, note: "automated review desk" },
-            },
-            clock,
-          );
-          msg.respond(reply);
-        });
-        logger.info("review desk attached", { mode: reviewDesk });
+        const decision = reviewDesk === "auto-approve" ? "approved" : "rejected";
+        const attachDesk = (subject: string, queue: string, producer: string, context: string): void => {
+          broker.subscribe(subject, { queue }, (msg) => {
+            if (!msg.respond) return;
+            msg.respond(
+              makeEnvelope(
+                {
+                  subject: `${subject}.reply`,
+                  kind: KIND.event,
+                  schemaVersion: SCHEMA_VERSION,
+                  producer,
+                  context,
+                  correlationId: asCorrelationId(msg.envelope.meta.correlationId),
+                  causationId: asCausationId(msg.envelope.meta.id),
+                  payload: { decision, reviewer: `desk:${reviewDesk}`, note: "automated desk" },
+                },
+                clock,
+              ),
+            );
+          });
+        };
+        attachDesk(SUBJECTS.clinicalReviewRequested, "cg.review-desk", "actor.clinical-reviewer", CONTEXT_LABEL.governance);
+        attachDesk(SUBJECTS.clarificationRequested, "cg.clarification-desk", "actor.transcription-reviewer", CONTEXT_LABEL.transcription);
+        logger.info("hitl desks attached", { mode: reviewDesk });
       }
     },
     async stop() {
@@ -143,6 +170,24 @@ export const bootstrap = (opts: BootstrapOptions = {}): SchedulerSystem => {
       await broker.publish(SUBJECTS.intakeSubmitted, env);
       logger.info("intake submitted", { intakeId, correlationId });
       return { intakeId, correlationId };
+    },
+    async emit(subject, payload, kind = "command") {
+      const correlationId = ID.correlation();
+      const env = makeEnvelope(
+        {
+          subject,
+          kind: kind === "command" ? KIND.command : KIND.event,
+          schemaVersion: SCHEMA_VERSION,
+          producer: "actor.external",
+          context: CONTEXT_LABEL.orchestration,
+          correlationId: asCorrelationId(correlationId),
+          causationId: asCausationId(correlationId),
+          payload,
+        },
+        clock,
+      );
+      await broker.publish(subject, env);
+      return { correlationId: correlationId as CorrelationId };
     },
   };
 };

@@ -15,6 +15,11 @@ export * as Broker from "./broker.js";
 export * as Identity from "./identity.js";
 export * as Plans from "./plans.js";
 export * as Integrations from "./integrations.js";
+export * as Projections from "./projections.js";
+export * as SemanticTypes from "./semantic-types.js";
+export * as Transcription from "./transcription.js";
+export * as Speech from "./speech.js";
+export * as Calendar from "./calendar.js";
 
 export { SUBJECTS, PATTERNS, CONTEXT, behaviorSubject } from "./subjects.js";
 export { AGENT, BEHAVIOR, CONTEXT_LABEL, INVOCATION_POLICY } from "./identity.js";

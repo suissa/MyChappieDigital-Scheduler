@@ -50,6 +50,45 @@ export const readQueueForProfessional = (store: MemoryStore, professionalId: str
 export const readAffinity = (store: MemoryStore, professionalId: string, condition: string) =>
   doc<AffinityView>(store, PROJECTION.affinity, `${professionalId}:${condition}`);
 
+export interface TranscriptView {
+  transcriptId: string;
+  rawText: string;
+  correctedText: string;
+  corrections: unknown[];
+  confidence: number;
+  inScope: boolean;
+  provider: string;
+  clarificationId?: string;
+}
+
+export interface SpeechView {
+  audioRef: string;
+  voiceId: string;
+  language: string;
+  characterCount: number;
+  creditsConsumed: number;
+  translated: boolean;
+  consultaId?: string;
+  professionalId?: string;
+}
+
+export interface CalendarMirrorState {
+  providerEventId: string;
+  lastHash: string;
+}
+
+export const readTranscript = (store: MemoryStore, audioRef: string) =>
+  doc<TranscriptView>(store, PROJECTION.transcript, audioRef);
+
+export const readClarification = (store: MemoryStore, clarificationId: string) =>
+  doc<Record<string, unknown>>(store, PROJECTION.clarification, clarificationId);
+
+export const readSpeech = (store: MemoryStore, speechId: string) =>
+  doc<SpeechView>(store, PROJECTION.speech, speechId);
+
+export const readCalendarMirror = (store: MemoryStore, consultaId: string) =>
+  store.get<CalendarMirrorState>(PROJECTION.calendarMirror, consultaId);
+
 export const readAuditTrail = (store: MemoryStore, correlationId: string) =>
   store.get<AuditEntry[]>(AUDIT_NS.trail, correlationId);
 

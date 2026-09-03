@@ -15,6 +15,9 @@ export const AGENT = Object.freeze({
   queue: "agent.queue",
   notification: "agent.notification",
   audit: "agent.audit",
+  transcription: "agent.transcription",
+  voice: "agent.voice",
+  calendarMirror: "agent.calendar-mirror",
 } as const);
 export type AgentLabel = (typeof AGENT)[keyof typeof AGENT];
 
@@ -28,6 +31,9 @@ export const CONTEXT_LABEL = Object.freeze({
   queue: "context.Queue",
   notification: "context.Notification",
   audit: "context.Audit",
+  transcription: "context.Transcription",
+  speech: "context.Speech",
+  calendar: "context.Calendar",
 } as const);
 export type ContextLabel = (typeof CONTEXT_LABEL)[keyof typeof CONTEXT_LABEL];
 
@@ -47,6 +53,13 @@ export const BEHAVIOR = Object.freeze({
   upsertProjection: "Projection.record.upsert",
   dispatchWhatsapp: "Whatsapp.message.dispatch",
   transcribeAudio: "Audio.transcribe",
+  assemblePrompt: "Prompt.assemble",
+  completeWithLlm: "Llm.completion.request",
+  guardResponse: "Response.scope.guard",
+  translateText: "Text.translate",
+  synthesizeSpeech: "Speech.synthesize",
+  mirrorCalendarEvent: "Calendar.event.mirror",
+  pollExternalCalendar: "Calendar.external.poll",
 } as const);
 export type BehaviorLabel = (typeof BEHAVIOR)[keyof typeof BEHAVIOR];
 
